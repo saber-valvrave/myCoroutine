@@ -19,10 +19,12 @@ void coroutineA(){
 void coroutineB(){
 	printf("coroutine B\n");
 	if(swapcontext(&contextB, &contextC) == -1)	handle_error("swapcontext a->b");
+	printf("coroutine B over\n");
 }
 void coroutineC(){
 	printf("coroutine C\n");
 	//if(swapcontext(&contextC, &contextA) == -1)	handle_error("swapcontext c->b");
+	printf("coroutine C over\n");
 }
 void coroutine_run(){
 		char stackA[1024 * 128] = {'\0'};
@@ -46,7 +48,7 @@ void coroutine_run(){
 
 		contextC.uc_stack.ss_sp = (void*)stackC;
 		contextC.uc_stack.ss_size = sizeof(stackC);
-		//contextC.uc_link = &contextA;
+		contextC.uc_link = &contextA;
 		makecontext(&contextC, coroutineC, 0);
 
 		if(swapcontext(&context, &contextA) == -1)	handle_error("swapcontext m->a");
