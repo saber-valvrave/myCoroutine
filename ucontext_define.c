@@ -52,7 +52,7 @@ void coroutine_run(){
 		//设置上下文环境函数运行栈空间，根据需要设置当前上下文运行结束要恢复的上下文
 		contextA.uc_stack.ss_sp = (void*)stackA;
 		contextA.uc_stack.ss_size = sizeof(stackA);
-		contextA.uc_link = &context;
+		contextA.uc_link = &context;//在函数运行结束后恢复到其指向的上下文环境运行
 		//创建并绑定欲执行的函数到该上下文环境中
 		makecontext(&contextA, coroutineA, 0);
 
