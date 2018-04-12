@@ -2,15 +2,14 @@
 /***********************
 说明：
 	getcontext：获取当前上下文
-	setcontext：
-	makecontext：
-	swapcontext：
+	setcontext：设置当前上下文并运行当前上下文
+	makecontext：创建当前上下文
+	swapcontext：交换上下文，挂起当前上下文，调度到被交换的上下文。
 
 *************************/
 
 
 ucontext_t context,contextA,contextB,contextC;
-ucontext_t a;
 
 void ucontext_test(){
 	ucontext_t context;
@@ -23,15 +22,11 @@ void ucontext_test(){
 
 void coroutineA(){
 	printf("coroutine A\n");
-	char c;
-	printf("%p\n", &c);
-	if(swapcontext(&a, &contextB) == -1){
+	if(swapcontext(&contextA, &contextB) == -1){
 		handle_error("swapcontext a->b");
 	}else{
 		printf("swapcontextA\n");
 	}
-	char d;
-	printf("%p\n", &d);
 	printf("coroutine A over\n");
 }
 void coroutineB(){
@@ -65,14 +60,14 @@ void coroutine_run(){
 
 		contextB.uc_stack.ss_sp = (void*)stackB;
 		contextB.uc_stack.ss_size = sizeof(stackB);
-		//contextB.uc_link = &contextA;
+		contextB.uc_link = &contextA;
 		makecontext(&contextB, coroutineB, 0);
 
 		if(-1 == getcontext(&contextC))	handle_error("getcontextC");
 
 		contextC.uc_stack.ss_sp = (void*)stackC;
 		contextC.uc_stack.ss_size = sizeof(stackC);
-		contextC.uc_link = &contextA;
+		contextC.uc_link = &contextB;
 		makecontext(&contextC, coroutineC, 0);
 		//两个功能：挂起当前上下文，调度到指定的上下文运行
 		if(swapcontext(&context, &contextA) == -1)	handle_error("swapcontext m->a");
